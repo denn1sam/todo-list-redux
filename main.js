@@ -5,17 +5,21 @@ const footerContainer = document.getElementsByClassName('footer')[0];
 
 addTaskButton.addEventListener('click', addTask);
 
-let mockArr = [];
+function rebuildList() {
+  listContainer.innerHTML = '';
 
-window.onload = () => {
-  mockArr = JSON.parse(localStorage.getItem('tasksList')) || [];
-  if (mockArr.length) {
-    mockArr.forEach(el => renderTask(el.listId));
-  }
+  store.getState().forEach(task => {
+    this.renderTask(task);
+  });
 }
 
-function pushToLocalStorage() {
-  localStorage.setItem('tasksList', JSON.stringify(mockArr));
+function rebuildTasksInfo() {
+  const doneTasksArr = store.getState().filter(el => el.done === true);
+  const html = `
+    <p>all: ${store.getState().length}</p>
+    <p>done: ${doneTasksArr.length}</p>
+  `;
+  footerContainer.innerHTML = html;
 }
 
 function addTask() {
@@ -23,15 +27,12 @@ function addTask() {
   if (!text) return;
 
   store.dispatch(addTodo(text));
-  // mockArr.push({ listId, text });
 
-  pushToLocalStorage();
-  // renderTask(listId);
   inputElement.value = '';
 }
 
-function renderTask(listId) {
-  const { text, done } = mockArr.find(el => el.listId === listId);
+
+function renderTask({ text, done, id }) {
   const html = `
     <p class="list-checkbox">+</p>
     <p class="list-element-text"></p>
@@ -44,8 +45,6 @@ function renderTask(listId) {
   listDivElement.classList.add('list-element');
   listContainer.appendChild(listDivElement);
 
-  renderTasksInfo();
-
   const checkBox = listDivElement.getElementsByClassName('list-checkbox')[0];
   const taskTextElement = listDivElement.getElementsByClassName('list-element-text')[0];
   const deleteBtn = listDivElement.getElementsByClassName('list-delete-btn')[0];
@@ -54,23 +53,12 @@ function renderTask(listId) {
 
   if (done) {
     checkBox.style.backgroundColor = 'red';
+  } else {
+    checkBox.addEventListener('click', () => clickOnCheckBox(id, checkBox));
   }
 
-  checkBox.addEventListener('click', () => clickOnCheckBox(listId, checkBox));
-  taskTextElement.addEventListener('dblclick', () => editTask(listId, listDivElement));
-  deleteBtn.addEventListener('click', () => clickToDeleteBtn(listId, listDivElement));
-}
-
-function clickOnCheckBox(listId, checkBox) {
-  const listElement = mockArr.find(el => el.listId === listId);
-
-  if (listElement.done) return;
-
-  listElement.done = true;
-  checkBox.style.backgroundColor = 'red';
-
-  pushToLocalStorage();
-  renderTasksInfo();
+  taskTextElement.addEventListener('dblclick', () => editTask(id, listDivElement));
+  deleteBtn.addEventListener('click', () => clickToDeleteBtn(id, listDivElement));
 }
 
 function editTask(listId, listDivElement) {
@@ -86,27 +74,16 @@ function editTask(listId, listDivElement) {
 
 function saveEditedTask(listId, textField) {
   const editedTask = textField.getElementsByClassName('input-task-edit')[0];
-  const task = mockArr.find(el => el.listId === listId);
-  task.text = editedTask.value;
-  textField.innerHTML = task.text;
 
-  pushToLocalStorage();
+  store.dispatch(editTodo(listId, editedTask.value));
 }
 
-function clickToDeleteBtn(listId, listDivElement) {
-  const arrIndex = mockArr.findIndex(el => el.listId === listId);
-  mockArr.splice(arrIndex, 1);
-  listDivElement.remove();
+function clickOnCheckBox(listId, checkBox) {
+  store.dispatch(doneTodo(listId));
+  checkBox.style.backgroundColor = 'red';
 
-  renderTasksInfo();
-  pushToLocalStorage();
 }
 
-function renderTasksInfo() {
-  const doneTasksArr = mockArr.filter(el => el.done === true);
-  const html = `
-    <p>all: ${mockArr.length}</p>
-    <p>done: ${doneTasksArr.length}</p>
-  `;
-  footerContainer.innerHTML = html;
+function clickToDeleteBtn(listId) {
+  store.dispatch(delTodo(listId));
 }
