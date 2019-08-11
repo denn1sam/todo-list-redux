@@ -54,11 +54,11 @@ function renderTask({ text, done, id }) {
   if (done) {
     checkBox.style.backgroundColor = 'red';
   } else {
-    checkBox.addEventListener('click', () => clickOnCheckBox(id, checkBox));
+    checkBox.addEventListener('click', () => clickOnCheckBox(id));
   }
 
   taskTextElement.addEventListener('dblclick', () => editTask(id, listDivElement));
-  deleteBtn.addEventListener('click', () => clickToDeleteBtn(id, listDivElement));
+  deleteBtn.addEventListener('click', () => clickToDeleteBtn(id));
 }
 
 function editTask(listId, listDivElement) {
@@ -69,7 +69,7 @@ function editTask(listId, listDivElement) {
     <button class="save-btn">save</button>
   `;
   const saveBtn = textField.getElementsByClassName('save-btn')[0];
-  saveBtn.addEventListener("click", () => saveEditedTask(listId, textField));
+  saveBtn.addEventListener('click', () => saveEditedTask(listId, textField));
 }
 
 function saveEditedTask(listId, textField) {
@@ -78,10 +78,8 @@ function saveEditedTask(listId, textField) {
   store.dispatch(editTodo(listId, editedTask.value));
 }
 
-function clickOnCheckBox(listId, checkBox) {
+function clickOnCheckBox(listId) {
   store.dispatch(doneTodo(listId));
-  checkBox.style.backgroundColor = 'red';
-
 }
 
 function clickToDeleteBtn(listId) {
