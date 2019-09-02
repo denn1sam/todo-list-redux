@@ -31,7 +31,6 @@ function addTask() {
   inputElement.value = '';
 }
 
-
 function renderTask({ text, done, id }) {
   const html = `
     <p class="list-checkbox">+</p>
